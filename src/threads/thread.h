@@ -89,7 +89,7 @@ struct thread
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
     struct list_elem allelem;           /* List element for all threads list. */
-    struct list_elem timerelem;        /*List element for timer block list */
+    
     
     int64_t wakeup_tick;
     
@@ -121,8 +121,6 @@ tid_t thread_create (const char *name, int priority, thread_func *, void *);
 
 void thread_block (void);
 void thread_unblock (struct thread *);
-
-bool compare_less(const struct list_elem *first, const struct list_elem *second, void *aux UNUSED);
 
 struct thread *thread_current (void);
 tid_t thread_tid (void);

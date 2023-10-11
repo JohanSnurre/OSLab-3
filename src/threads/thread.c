@@ -581,20 +581,6 @@ allocate_tid (void)
 
   return tid;
 }
-
-bool
-compare_less(const struct list_elem *first, const struct list_elem *second, void *aux UNUSED)
-{
-
-  struct thread *first_thread = list_entry(first, struct thread, timerelem);
-  struct thread *second_thread = list_entry(second, struct thread, timerelem);
-
-  if(first_thread->wakeup_tick != second_thread->wakeup_tick){
-    return first_thread->wakeup_tick < second_thread->wakeup_tick;
-  }
-  return first_thread->priority > second_thread->priority;
-  
-}
 
 /* Offset of `stack' member within `struct thread'.
    Used by switch.S, which can't figure it out on its own. */
