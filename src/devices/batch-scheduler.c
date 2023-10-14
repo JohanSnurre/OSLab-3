@@ -82,6 +82,12 @@ struct condition has_space;
 
 struct condition not_empty;
 
+struct condition exist_prio;
+
+struct condition no_prio;
+
+int number_of_prios;
+
 int active_tasks;
 
 direction_t bus_direction;
@@ -97,7 +103,10 @@ void init_bus (void) {
   lock_init(&bus_lock);
   cond_init(&has_space);
   cond_init(&not_empty);
+  cond_init(&exist_prio);
+  cond_init(&no_prio);
   active_tasks = 0;
+  number_of_prios = 0;
   bus_direction = NUM_OF_DIRECTIONS;
   
 }
@@ -209,7 +218,10 @@ void get_slot (const task_t *task) {
    */
 
 
+  
+
   lock_acquire(&bus_lock);
+ 
   while(active_tasks == BUS_CAPACITY || (active_tasks > 0 && bus_direction == other_direction(task->direction))){
 
     cond_wait(&has_space,&bus_lock);
@@ -240,6 +252,7 @@ void release_slot (const task_t *task) {
     cond_wait(&not_empty,&bus_lock);
 
   }
+ 
   active_tasks--;
   cond_broadcast(&has_space,&bus_lock);
   lock_release(&bus_lock);
