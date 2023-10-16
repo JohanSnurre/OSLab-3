@@ -5,11 +5,6 @@ Kernel command line: run batch-scheduler========================================
                Built from SVN snapshot on June 15, 2014
                   Compiled on Oct  7 2020 at 10:29:51
 ========================================================================
-ler) sender acquired slot
-
-(batch-scheduler) receiver acquired slot
-(batch-scheduler) receiver acquired slot
-(batch-scheduler) receiver acquired slot
-(batch-scheduler) receiver acquired slot
+atch-scheduler) sender-prio acquired slot
 (batch-scheduler) end
 Execution of 'batch-scheduler' complete.

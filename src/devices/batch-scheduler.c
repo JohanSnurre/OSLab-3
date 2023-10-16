@@ -82,16 +82,21 @@ struct condition has_space;
 
 struct condition not_empty;
 
-struct condition exist_prio;
+struct condition exist_send_prio;
 
-struct condition no_prio;
+struct condition exist_receive_prio;
 
-int number_of_prios;
+int send_prios;
+
+int receive_prios;
 
 int active_tasks;
 
 direction_t bus_direction;
 
+struct condition has_space_send;
+
+struct condition has_space_receive;
 
 void init_bus (void) {
 
@@ -100,13 +105,17 @@ void init_bus (void) {
   /* TODO: Initialize global/static variables,
      e.g. your condition variables, locks, counters etc */
 
+ 
   lock_init(&bus_lock);
   cond_init(&has_space);
   cond_init(&not_empty);
-  cond_init(&exist_prio);
-  cond_init(&no_prio);
+  cond_init(&exist_send_prio);
+  cond_init(&exist_receive_prio);
+  cond_init(&has_space_send);
+  cond_init(&has_space_receive);
   active_tasks = 0;
-  number_of_prios = 0;
+  send_prios = 0;
+  receive_prios = 0;
   bus_direction = NUM_OF_DIRECTIONS;
   
 }
@@ -126,6 +135,7 @@ void batch_scheduler (unsigned int num_priority_send,
 
   int j = 0;
 
+  
   /* create priority sender threads */
   for (unsigned i = 0; i < num_priority_send; i++) {
     tasks[j].direction = SEND;
@@ -140,6 +150,8 @@ void batch_scheduler (unsigned int num_priority_send,
     j++;
   }
 
+ 
+
   /* create priority receiver threads */
   for (unsigned i = 0; i < num_priority_receive; i++) {
     tasks[j].direction = RECEIVE;
@@ -153,6 +165,8 @@ void batch_scheduler (unsigned int num_priority_send,
 
     j++;
   }
+
+ 
 
   /* create normal sender threads */
   for (unsigned i = 0; i < num_tasks_send; i++) {
@@ -182,6 +196,8 @@ void batch_scheduler (unsigned int num_priority_send,
     j++;
   }
 
+
+
   /* Sleep until all tasks are complete */
   timer_sleep (2 * total_transfer_dur);
 }
@@ -191,8 +207,9 @@ void run_task(void *task_) {
   task_t *task = (task_t *)task_;
 
   get_slot (task);
-
-  msg ("%s acquired slot", thread_name());
+  // msg ("%s acquired slot, RECEIVE PRIO: %d, SEND PRIO %d, active tasks: %d", thread_name(), receive_prios, send_prios, active_tasks );
+  msg("%s acquired slot", thread_name());
+  // THIS IS A RACE CONDITION PRINT STATEMENT; FUCKS UP THE RESULT
   transfer_data (task);
 
   release_slot (task);
@@ -217,22 +234,44 @@ void get_slot (const task_t *task) {
    * even if there are priority tasks of the other direction waiting
    */
 
-
-  
-
   lock_acquire(&bus_lock);
- 
-  while(active_tasks == BUS_CAPACITY || (active_tasks > 0 && bus_direction == other_direction(task->direction))){
 
-    cond_wait(&has_space,&bus_lock);
-
+  if(task->priority == PRIORITY){
+    if(task->direction == SEND){
+      send_prios++;
+    }
+    else{
+      receive_prios++;
+    }
   }
 
-    active_tasks++;
-    cond_signal(&not_empty,&bus_lock);
-    lock_release(&bus_lock);
+  while((active_tasks == BUS_CAPACITY) || ((active_tasks > 0) && (bus_direction == other_direction(task->direction))) ||
+	((task->priority == NORMAL) && (send_prios + receive_prios > 0))){
+    
+    if(task->direction == SEND){
+      cond_wait(&has_space_send, &bus_lock);
+    }
+    else{
+      cond_wait(&has_space_receive, &bus_lock);
+    }    
+  }
 
+  if(task->priority == PRIORITY){
+    if(task->direction == SEND){
+      send_prios--;
+    }
+    else{
+      receive_prios--;
+    }
+  }
+   
+  active_tasks++;
+  bus_direction = task->direction;    
+ 
+  //msg("%s acquired slot, active tasks: %d", thread_name(), active_tasks);
+  cond_signal(&not_empty,&bus_lock);
   
+  lock_release(&bus_lock);
 }
 
 void transfer_data (const task_t *task) {
@@ -250,13 +289,22 @@ void release_slot (const task_t *task) {
   lock_acquire(&bus_lock);
   while(active_tasks == 0){
     cond_wait(&not_empty,&bus_lock);
+  }
+  
+  active_tasks--;
 
+  if(bus_direction == SEND){
+    if(active_tasks == 0){
+      cond_broadcast(&has_space_receive,&bus_lock);
+    }
+    cond_signal(&has_space_send,&bus_lock);
+  }
+  else if(bus_direction == RECEIVE){
+    if(active_tasks == 0){
+      cond_broadcast(&has_space_send,&bus_lock);
+    }
+    cond_signal(&has_space_receive,&bus_lock);
   }
  
-  active_tasks--;
-  cond_broadcast(&has_space,&bus_lock);
   lock_release(&bus_lock);
-
-
-  
 }
