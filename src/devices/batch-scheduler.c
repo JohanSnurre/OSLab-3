@@ -82,10 +82,6 @@ struct condition has_space;
 
 struct condition not_empty;
 
-struct condition exist_send_prio;
-
-struct condition exist_receive_prio;
-
 int send_prios;
 
 int receive_prios;
@@ -98,6 +94,8 @@ struct condition has_space_send;
 
 struct condition has_space_receive;
 
+int enter_id; //bookkeeping variable
+
 void init_bus (void) {
 
   random_init ((unsigned int)123456789);
@@ -109,13 +107,12 @@ void init_bus (void) {
   lock_init(&bus_lock);
   cond_init(&has_space);
   cond_init(&not_empty);
-  cond_init(&exist_send_prio);
-  cond_init(&exist_receive_prio);
   cond_init(&has_space_send);
   cond_init(&has_space_receive);
   active_tasks = 0;
   send_prios = 0;
   receive_prios = 0;
+  enter_id = 0;
   bus_direction = NUM_OF_DIRECTIONS;
   
 }
@@ -207,9 +204,8 @@ void run_task(void *task_) {
   task_t *task = (task_t *)task_;
 
   get_slot (task);
-  // msg ("%s acquired slot, RECEIVE PRIO: %d, SEND PRIO %d, active tasks: %d", thread_name(), receive_prios, send_prios, active_tasks );
   msg("%s acquired slot", thread_name());
-  // THIS IS A RACE CONDITION PRINT STATEMENT; FUCKS UP THE RESULT
+  // THIS IS A RACE CONDITION PRINT STATEMENT; CAN FUCK UP THE RESULT
   transfer_data (task);
 
   release_slot (task);
@@ -267,8 +263,9 @@ void get_slot (const task_t *task) {
    
   active_tasks++;
   bus_direction = task->direction;    
- 
-  //msg("%s acquired slot, active tasks: %d", thread_name(), active_tasks);
+
+  //printf("ENTER ID: %d. ", enter_id);
+  //enter_id++;
   cond_signal(&not_empty,&bus_lock);
   
   lock_release(&bus_lock);
