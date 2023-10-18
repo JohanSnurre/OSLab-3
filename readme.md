@@ -72,12 +72,18 @@ The algorithm
         }
         
         get_slot(){
-          acquire_lock(bus_lock);
-          while(not allowed a slot){
-            cond_wait(space from my direction, bus_lock);
-          }	
+            acquire_lock(bus_lock);
+            if task is priority{
+                increment respective priority counter;
+            }
+            while(not allowed a slot){
+                cond_wait(space from my direction, bus_lock);
+            }	
           	direction = my direction;
           	active_tasks++;
+            if task is priority{
+                decrement respective priority counter;
+            }
           	cond_signal(not empty, bus_lock);
           	release_lock(bus_lock);
         }
@@ -89,18 +95,17 @@ The algorithm
         	}
         	active_tasks--;
         	switch(direction of task){
-        
-        		case SEND{
-        			if(active_tasks == 0){
-        				cond_broadcast(other direction, bus_lock);
-        			}
-        			cond_signal(same direction, bus_lock);
+                case SEND{
+                    if(active_tasks == 0){
+                        cond_broadcast(other direction, bus_lock);
+                    }
+                    cond_signal(same direction, bus_lock);
                 }
                 case RECEIVE{
-        		  if(active_tasks == 0, bus_lock){
-        				cond_broadcast(other direction, bus_lock);
-        			}
-        		  cond_signal(same direction, bus_lock);
+                    if(active_tasks == 0, bus_lock){
+                        cond_broadcast(other direction, bus_lock);
+                    }
+                    cond_signal(same direction, bus_lock);
                 }
             }  
         	release_lock(bus_lock);
