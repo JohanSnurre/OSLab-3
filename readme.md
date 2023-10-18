@@ -17,7 +17,7 @@ Deciding on how to work on the assignment
 
 Data structures and fields
 
-    We have introduced some data structures, local variables and few conditional variables for the functionality of the code. Some of them are listed as below:
+    We have introduced some data structures like locks and conditions as well as counters for the functionality of the code. they are listed as below:
     
     Struct lock bus_lock:
     
