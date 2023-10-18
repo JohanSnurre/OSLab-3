@@ -127,9 +127,9 @@ Is the implementation unfair? How to manage this issue?
 Race condition in the test
 
     There is a race condition in the test of the batch-scheduler. The test compares the output from the code with an expected output. The problem is in the run_task() function. In this function the calls are:
-    get_slot()
-    transfer_data()
-    release_slot()
+        1. get_slot()
+        2. transfer_data()
+        3. release_slot()
     After the call to get_slot() there is also a call to msg() which prints what task got a slot, since this call is not in a critical section a task that completed get_slot() may be preempted before the call to msg(),
     then another task may call msg() before the first task. This could make the output different than what is expected, the first task to get a slot may not be the first task to output the msg, creating a race condition.
     To verify that the tasks enter the bus in the right order there is a bookkeeping variable, enter_id, that can be printed out within the critical section of get_slot(). This shows the order of the slots being 
