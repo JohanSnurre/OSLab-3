@@ -18,19 +18,33 @@ Deciding on how to work on the assignment
 Data structures and fields
 
     We have introduced some data structures, local variables and few conditional variables for the functionality of the code. Some of them are listed as below:
-    Struct lock bus_lock
+    
+    Struct lock bus_lock:
+    
             This structure is used to protect the critical section of the code specially for the synchronization purpose. This lock is used to ensure that only one task can try to acquire a slot on the bus at a time.
-    Struct condition not_empty
+    
+    Struct condition not_empty:
+    
             This condition variable is used for signalling and waiting by tasks that have acquired the slots on the bus. It is used for managing the release of slots.
-    Struct condition has_space_send
+    
+    Struct condition has_space_send:
+    
             The tasks use this condition variable if they want to send data. This condition variable helps to manage slot availability for sending tasks based on their direction.
-    Struct condition has_space_receive
+    
+    Struct condition has_space_receive:
+    
             This is used for tasks that want to receive data. This condition helps to manage the slot availability for receiving tasks based on their direction.
-    Int send_prios
+    
+    Int send_prios:
+    
             This variable is incremented when a priority task of sending direction is trying to access the bus and decremented for when a priority task enters the bus.
-    Int receive_prios
+            
+    Int receive_prios:
+    
             It is incremented for when a priority task of receiving direction is trying to access the bus and decremented for when a priority task enters the bus.
-    Int active_tasks 
+            
+    Int active_tasks:
+    
             This integer variable is used to maintain the count of the total number of tasks currently using the bus. It is incremented when a task successfully acquires a slot on the bus and
             decremented when a task releases the slot.
 
