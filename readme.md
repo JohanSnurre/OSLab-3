@@ -74,33 +74,33 @@ The algorithm
         get_slot(){
           acquire_lock(bus_lock);
           while(not allowed a slot){
-            cond_wait(space from my direction);
+            cond_wait(space from my direction, bus_lock);
           }	
           	direction = my direction;
           	active_tasks++;
-          	signal(not empty);
+          	cond_signal(not empty, bus_lock);
           	release_lock(bus_lock);
         }
         
         release_slot(){
         	acquire_lock(bus_lock);
         	while(no tasks on the bus){
-        		cond_wait(not empty);
+        		cond_wait(not empty, bus_lock);
         	}
         	active_tasks--;
         	switch(direction of task){
         
         		case SEND{
         			if(active_tasks == 0){
-        				cond_broadcast(other direction);
+        				cond_broadcast(other direction, bus_lock);
         			}
-        			cond_signal(same direction);
+        			cond_signal(same direction, bus_lock);
                 }
                 case RECEIVE{
-        		  if(active_tasks == 0){
-        				cond_broadcast(other direction);
+        		  if(active_tasks == 0, bus_lock){
+        				cond_broadcast(other direction, bus_lock);
         			}
-        		  cond_signal(same direction);
+        		  cond_signal(same direction, bus_lock);
                 }
             }  
         	release_lock(bus_lock);
