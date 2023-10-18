@@ -92,7 +92,7 @@ struct condition has_space_send;
 
 struct condition has_space_receive;
 
-int enter_id; //bookkeeping variable
+//int enter_id; //bookkeeping variable
 
 void init_bus (void) {
 
@@ -109,7 +109,7 @@ void init_bus (void) {
   active_tasks = 0;
   send_prios = 0;
   receive_prios = 0;
-  enter_id = 0;
+  //enter_id = 0;
   bus_direction = NUM_OF_DIRECTIONS;
   
 }
