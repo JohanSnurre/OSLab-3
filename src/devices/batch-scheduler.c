@@ -78,8 +78,6 @@ static void release_slot (const task_t *task);
 
 struct lock bus_lock;
 
-struct condition has_space;
-
 struct condition not_empty;
 
 int send_prios;
@@ -105,7 +103,6 @@ void init_bus (void) {
 
  
   lock_init(&bus_lock);
-  cond_init(&has_space);
   cond_init(&not_empty);
   cond_init(&has_space_send);
   cond_init(&has_space_receive);
