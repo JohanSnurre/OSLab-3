@@ -76,17 +76,19 @@ The algorithm
         	active_tasks--;
         	switch(direction of task){
         
-        		case SEND:
+        		case SEND{
         			if(active_tasks == 0){
         				cond_broadcast(other direction);
         			}
         			cond_signal(same direction);
-            case RECEIVE:
+                }
+                case RECEIVE{
         		  if(active_tasks == 0){
         				cond_broadcast(other direction);
         			}
         		  cond_signal(same direction);
-          }  
+                }
+            }  
         	release_lock(bus_lock);
         }
 
